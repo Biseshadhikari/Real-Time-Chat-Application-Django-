@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="" id = "formSubmit">
+        <textarea name="" id="chatlog" cols="100" rows="20" readonly = "true    "></textarea>
+        <br>
+        <input type="text" name="" id="chat-message-input">
+        <br>
+        <button id = "chat-message-submit">send</button>
+        <span id = "channel-url" style="display: none;">{{channel}}</span>
+    </form>
+
+    <script>
+        const url = document.getElementById('channel-url').textContent
+        var ws = new WebSocket(`ws://${window.location.host}/ws/${url}/`);
+        
+    
+        ws.onopen = function(){ 
+            console.log('websocket connection')
+            ws.send('hi from client')
+        }
+        ws.onmessage = function(event){ 
+                console.log('message received from server',event.data)
+                const data = JSON.parse(event.data)
+                const messageLog = document.getElementById('chatlog').value += (data['msg']+'\n')
+        }
+        ws.onclose = function(event){ 
+            console.log("websocket closed")
+        }
+        document.getElementById('formSubmit').addEventListener("submit",(e)=>{ 
+            e.preventDefault()
+            const messageInput = document.getElementById('chat-message-input')
+            const message = messageInput.value
+            ws.send(JSON.stringify({'msg':message}))
+            messageInput.value = ""
+        })
+
+    </script>
+</body>
+</html>
